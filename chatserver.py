@@ -8,6 +8,7 @@ class Chat(LineReceiver):
 
     lock = threading.Lock()
     rooms = {}
+    MAX_USERNAME = 64
 
     def __init__(self, users):
         self.users = users
@@ -29,8 +30,18 @@ class Chat(LineReceiver):
             self.handle_CHAT(line)
 
     def handle_INTRO(self, name):
+        name = name.strip()
         if name in self.users:
             self.sendLine("Sorry, name taken.\nLogin Name?")
+            return
+        if name == "":
+            self.sendLine("Your name can't be empty.\nLogin Name?")
+            return
+        if name.startswith("/"):
+            self.sendLine("Don't start your name with /, that's used for commands.\nLogin Name?")
+            return
+        if len(name) > Chat.MAX_USERNAME:
+            self.sendLine("Your name can't be longer than {} characters.\nLogin Name?".format(Chat.MAX_USERNAME))
             return
         self.sendLine("Welcome, {}!".format(name))
         self.name = name
