@@ -85,30 +85,31 @@ class Chat(LineReceiver):
         self.sendLine(message)
 
     def command_join(self, message):
-        if len(message) < len("/join ") + 1:
-            self.sendLine("Which room do you want to join? Use /rooms to list active rooms or use /join <room> with an unused name to create a new one.")
-        else:
-            if self.room:
-                self.command_leave()
-            roomname = message.replace("/join ", "", 1)
-            with Chat.lock:
-                if roomname in Chat.rooms.keys():
-                    Chat.rooms[roomname].users.append(self.name)
+        roomname = message.replace("/join", "", 1).strip()
+        reason = self.name_sanity_check(roomname, "room")
+        if reason:
+            self.sendLine("{}Which room do you want to join? Use /rooms to list active rooms or use /join <room> with an unused name to create a new one.".format(reason))
+            return
+        if self.room:
+            self.command_leave()
+        with Chat.lock:
+            if roomname in Chat.rooms.keys():
+                Chat.rooms[roomname].users.append(self.name)
+            else:
+                room = chatroom.ChatRoom(roomname, self.name)
+                Chat.rooms[roomname] = room
+            self.room = Chat.rooms[roomname]
+            message = "entering room: {}\n".format(roomname)
+            for user in Chat.rooms[roomname].users:
+                message += " * {}".format(user)
+                if user == self.name:
+                    message += " (** this is you)\n"
                 else:
-                    room = chatroom.ChatRoom(roomname, self.name)
-                    Chat.rooms[roomname] = room
-                self.room = Chat.rooms[roomname]
-                message = "entering room: {}\n".format(roomname)
-                for user in Chat.rooms[roomname].users:
-                    message += " * {}".format(user)
-                    if user == self.name:
-                        message += " (** this is you)\n"
-                    else:
-                        message += "\n"
-            message += "end of list.\n"
-            self.sendLine(message)
-            message = " * new user joined chat: {}".format(self.name)
-            self.send_to_chatroom(message)
+                    message += "\n"
+        message += "end of list.\n"
+        self.sendLine(message)
+        message = " * new user joined chat: {}".format(self.name)
+        self.send_to_chatroom(message)
 
     def command_leave(self):
         message = " * user has left the chat: {}\n".format(self.name)
