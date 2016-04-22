@@ -8,7 +8,7 @@ class Chat(LineReceiver):
 
     lock = threading.Lock()
     rooms = {}
-    MAX_USERNAME = 64
+    MAXLEN_NAME = 64
 
     def __init__(self, users):
         self.users = users
@@ -34,14 +34,9 @@ class Chat(LineReceiver):
         if name in self.users:
             self.sendLine("Sorry, name taken.\nLogin Name?")
             return
-        if name == "":
-            self.sendLine("Your name can't be empty.\nLogin Name?")
-            return
-        if name.startswith("/"):
-            self.sendLine("Don't start your name with /, that's used for commands.\nLogin Name?")
-            return
-        if len(name) > Chat.MAX_USERNAME:
-            self.sendLine("Your name can't be longer than {} characters.\nLogin Name?".format(Chat.MAX_USERNAME))
+        reason = self.name_sanity_check(name, "user")
+        if reason:
+            self.sendLine("{}Login Name?".format(reason))
             return
         self.sendLine("Welcome, {}!".format(name))
         self.name = name
@@ -63,6 +58,16 @@ class Chat(LineReceiver):
             message = "<{}> {}".format(self.name, message)
             self.sendLine(message)
             self.send_to_chatroom(message)
+
+    def name_sanity_check(self, name, nametype):
+        reason = None
+        if name == "":
+            reason = "The {} name can't be empty.\n".format(nametype)
+        if name.startswith("/"):
+            reason =  "Don't start the {} name with /, that's used for commands.\n".format(nametype)
+        if len(name) > Chat.MAXLEN_NAME:
+            reason = "The {} name can't be longer than {} characters.\n".format(nametype, Chat.MAXLEN_NAME)
+        return reason
 
     def send_to_chatroom(self, message):
         with Chat.lock:
