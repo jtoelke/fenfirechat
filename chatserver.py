@@ -81,7 +81,7 @@ class Chat(LineReceiver):
         with Chat.lock:
             for room in Chat.rooms:
                 message += " * {} ({})\n".format(Chat.rooms[room].name, len(Chat.rooms[room].users))
-        message += "end of list.\n"
+        message += "end of list."
         self.sendLine(message)
 
     def command_join(self, message):
@@ -106,13 +106,13 @@ class Chat(LineReceiver):
                     message += " (** this is you)\n"
                 else:
                     message += "\n"
-        message += "end of list.\n"
+        message += "end of list."
         self.sendLine(message)
         message = " * new user joined chat: {}".format(self.name)
         self.send_to_chatroom(message)
 
     def command_leave(self):
-        message = " * user has left the chat: {}\n".format(self.name)
+        message = " * user has left the chat: {}".format(self.name)
         self.send_to_chatroom(message)
         message = " * user has left the chat: {} (** this is you)".format(self.name)
         self.sendLine(message)
