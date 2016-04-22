@@ -1,13 +1,19 @@
 from twisted.internet.protocol import Factory
 from twisted.protocols.basic import LineReceiver
 from twisted.internet import reactor
+import threading
+import chatroom
 
 class Chat(LineReceiver):
+
+    lock = threading.Lock()
+    rooms = {}
 
     def __init__(self, users):
         self.users = users
         self.name = None
         self.state = "INTRO"
+        self.room = None
 
     def connectionMade(self):
         self.sendLine("Welcome to the fenfiresong chat server\nLogin Name?")
@@ -32,10 +38,78 @@ class Chat(LineReceiver):
         self.state = "CHAT"
 
     def handle_CHAT(self, message):
-        message = "<{}> {}".format(self.name, message)
-        for name, protocol in self.users.iteritems():
-            protocol.sendLine(message)
+        if message.startswith("/rooms"):
+            self.command_rooms()
+        elif message.startswith("/join"):
+            self.command_join(message)
+        elif message.startswith("/leave"):
+            self.command_leave()
+        elif message.startswith("/quit"):
+            self.command_quit()
+        elif self.room == None:
+            self.sendLine("You're not in any room! Use /rooms to list active rooms and use /join <room> to enter or create a room.")
+        else:
+            message = "<{}> {}".format(self.name, message)
+            self.sendLine(message)
+            self.send_to_chatroom(message)
 
+    def send_to_chatroom(self, message):
+        with Chat.lock:
+            recipients = self.room.users
+        for name in recipients:
+            if name != self.name:
+                self.users[name].sendLine(message)
+
+    def command_rooms(self):
+        message = "Active rooms are:\n"
+        with Chat.lock:
+            for room in Chat.rooms:
+                message += " * {} ({})\n".format(Chat.rooms[room].name, len(Chat.rooms[room].users))
+        message += "end of list.\n"
+        self.sendLine(message)
+
+    def command_join(self, message):
+        if len(message) < len("/join ") + 1:
+            self.sendLine("Which room do you want to join? Use /rooms to list active rooms or use /join <room> with an unused name to create a new one.")
+        else:
+            if self.room:
+                self.command_leave()
+            roomname = message.replace("/join ", "", 1)
+            with Chat.lock:
+                if roomname in Chat.rooms.keys():
+                    Chat.rooms[roomname].users.append(self.name)
+                else:
+                    room = chatroom.ChatRoom(roomname, self.name)
+                    Chat.rooms[roomname] = room
+                self.room = Chat.rooms[roomname]
+                message = "entering room: {}\n".format(roomname)
+                for user in Chat.rooms[roomname].users:
+                    message += " * {}".format(user)
+                    if user == self.name:
+                        message += " (** this is you)\n"
+                    else:
+                        message += "\n"
+            message += "end of list.\n"
+            self.sendLine(message)
+            message = " * new user joined chat: {}".format(self.name)
+            self.send_to_chatroom(message)
+
+    def command_leave(self):
+        message = " * user has left the chat: {}\n".format(self.name)
+        self.send_to_chatroom(message)
+        message = " * user has left the chat: {} (** this is you)".format(self.name)
+        self.sendLine(message)
+        with Chat.lock:
+            self.room.users.remove(self.name)
+            if len(self.room.users) == 0:
+                del Chat.rooms[self.room.name]
+        self.room = None
+
+    def command_quit(self):
+        if self.room:
+            self.command_leave()
+        self.sendLine("BYE")
+        self.transport.loseConnection()
 
 class ChatFactory(Factory):
 
