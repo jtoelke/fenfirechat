@@ -20,6 +20,8 @@ class Chat(LineReceiver):
         self.sendLine("Welcome to the fenfiresong chat server\nLogin Name?")
 
     def connectionLost(self, reason):
+        if self.room:
+            self.command_leave()
         if self.name in self.users:
             del self.users[self.name]
 
@@ -123,8 +125,6 @@ class Chat(LineReceiver):
         self.room = None
 
     def command_quit(self):
-        if self.room:
-            self.command_leave()
         self.sendLine("BYE")
         self.transport.loseConnection()
 
