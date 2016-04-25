@@ -9,5 +9,6 @@ class ChatRoom:
         self.users.sort()
 
     def remove_user(self, user):
-        self.users.remove(user)
+        if user in self.users:
+            self.users.remove(user)
         return len (self.users)
