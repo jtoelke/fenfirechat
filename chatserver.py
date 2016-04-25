@@ -50,14 +50,14 @@ class Chat(LineReceiver):
             self.command_rooms()
         elif message.startswith("/join"):
             self.command_join(message)
-        elif message.startswith("/leave"):
-            self.command_leave()
         elif message.startswith("/quit"):
             self.command_quit()
         elif message.startswith("/whisper") or message.startswith("/w"):
             self.command_whisper(message)
         elif self.room == None:
             self.sendLine("You're not in any room! Use /rooms to list active rooms and use /join <room> to enter or create a room.")
+        elif message.startswith("/leave"):
+            self.command_leave()
         else:
             message = "<{}> {}".format(self.name, message)
             self.sendLine(message)
