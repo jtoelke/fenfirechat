@@ -7,3 +7,7 @@ class ChatRoom:
     def add_user(self, user):
         self.users.apend(user)
         self.users.sort()
+
+    def remove_user(self, user):
+        self.users.remove(user)
+        return len (self.users)
