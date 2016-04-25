@@ -54,6 +54,8 @@ class Chat(LineReceiver):
             self.command_leave()
         elif message.startswith("/quit"):
             self.command_quit()
+        elif message.startswith("/whisper") or message.startswith("/w"):
+            self.command_whisper(message)
         elif self.room == None:
             self.sendLine("You're not in any room! Use /rooms to list active rooms and use /join <room> to enter or create a room.")
         else:
@@ -124,6 +126,19 @@ class Chat(LineReceiver):
     def command_quit(self):
         self.sendLine("BYE")
         self.transport.loseConnection()
+
+    def command_whisper(self, message):
+        message_parts = message.split(None, 2)
+        if len(message_parts) < 3:
+            self.sendLine("To send a private message you need a recipient and a message: /w <recipient> <message>")
+        else:
+            recipient = message_parts[1]
+            pmessage = message_parts[2]
+            if recipient in self.users:
+                self.users[recipient].sendLine("<{} whispers> {}".format(self.name, pmessage))
+                self.sendLine("To {}: {}".format(recipient, pmessage))
+            else:
+                self.sendLine("Can't find user: {}".format(recipient))
 
 class ChatFactory(Factory):
 
