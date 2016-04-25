@@ -98,7 +98,7 @@ class Chat(LineReceiver):
             self.command_leave()
         with Chat.lock:
             if roomname in Chat.rooms.keys():
-                Chat.rooms[roomname].users.append(self.name)
+                Chat.rooms[roomname].add_user(self.name)
             else:
                 room = chatroom.ChatRoom(roomname, self.name)
                 Chat.rooms[roomname] = room

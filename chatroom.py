@@ -6,7 +6,7 @@ class ChatRoom:
           self.moderators = [user]
 
     def add_user(self, user):
-        self.users.apend(user)
+        self.users.append(user)
         self.users.sort()
 
     def remove_user(self, user):
