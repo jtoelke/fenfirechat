@@ -63,10 +63,8 @@ class Chat(LineReceiver):
 
     def name_sanity_check(self, name, nametype):
         reason = None
-        if name == "":
-            reason = "The {} name can't be empty.\n".format(nametype)
-        if name.startswith("/"):
-            reason =  "Don't start the {} name with /, that's used for commands.\n".format(nametype)
+        if not name.isalnum():
+            reason = "Please choose a {} name that consists of alphanumeric characters.\n".format(nametype)
         if len(name) > Chat.MAXLEN_NAME:
             reason = "The {} name can't be longer than {} characters.\n".format(nametype, Chat.MAXLEN_NAME)
         return reason
