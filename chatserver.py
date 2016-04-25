@@ -58,6 +58,8 @@ class Chat(LineReceiver):
             self.sendLine("You're not in any room! Use /rooms to list active rooms and use /join <room> to enter or create a room.")
         elif message.startswith("/leave"):
             self.command_leave()
+        elif message.startswith("/kick"):
+            self.command_kick(message)
         else:
             message = "<{}> {}".format(self.name, message)
             self.sendLine(message)
@@ -139,6 +141,35 @@ class Chat(LineReceiver):
                 self.sendLine("To {}: {}".format(recipient, pmessage))
             else:
                 self.sendLine("Can't find user: {}".format(recipient))
+
+    def command_kick(self, message):
+        with Chat.lock:
+            if not self.room.has_mod(self.name):
+                self.sendLine("You need to be moderator to use this command.")
+                return
+
+        message_parts = message.split(None, 2)
+        if len(message_parts) < 2:
+            self.sendLine("No user given. Use /kick <user> [reason]")
+            return
+
+        user = message_parts[1]
+        if user not in self.users:
+            self.sendLine("There is no user {}.".format(user))
+            return
+
+        if len(message_parts) > 2:
+            reason = ' "{}"'.format(message_parts[2])
+        else:
+            reason = ""
+        message = " * {} was kicked by moderator {}.{}".format(user, self.name, reason)
+        self.send_to_chatroom(message)
+        self.sendLine(message)
+        with Chat.lock:
+            if self.room.remove_user(user) == 0:
+                del Chat.rooms[self.room.name]
+        self.users[user].room = None
+
 
 class ChatFactory(Factory):
 
