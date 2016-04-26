@@ -30,11 +30,11 @@ class Chat(LineReceiver):
     def lineReceived(self, line):
         '''override from LineReceiver'''
         if self.state == "INTRO":
-            self.handle_INTRO(line)
+            self.handle_intro(line)
         else:
-            self.handle_CHAT(line)
+            self.handle_chat(line)
 
-    def handle_INTRO(self, name):
+    def handle_intro(self, name):
         name = name.strip()
         if name in self.users:
             self.sendLine("Sorry, name taken.\nLogin Name?")
@@ -48,7 +48,7 @@ class Chat(LineReceiver):
         self.users[name] = self
         self.state = "CHAT"
 
-    def handle_CHAT(self, message):
+    def handle_chat(self, message):
         if message.startswith("/rooms"):
             self.command_rooms()
         elif message.startswith("/join"):
