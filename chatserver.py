@@ -63,6 +63,8 @@ class Chat(LineReceiver):
             self.command_whisper(message)
         elif self.room == None:
             self.sendLine("You're not in any room! Use /rooms to list active rooms and use /join <room> to enter or create a room.")
+        elif message.startswith("/users"):
+            self.command_users()
         elif message.startswith("/leave"):
             self.command_leave()
         elif message.startswith("/mod"):
@@ -102,12 +104,26 @@ class Chat(LineReceiver):
             else:
                 return True
 
+    def get_userlist(self, room):
+        """Return a string listing the users in the given room."""
+        users = ""
+        with Chat.lock:
+            for user in room.users:
+                users += " * {}".format(user)
+                if user == self.name:
+                    users += " (** this is you)\n"
+                else:
+                    users += "\n"
+        users += "end of list."
+        return users
+
 # command handling
 
     def command_help(self):
         message = '''Available commands are:
     /rooms to list active rooms
     /join <room> to enter or create a room
+    /users to list users in your current room
     /leave to leave the room you're currently in
     /quit to disconnect from the server
     /whisper <user> <message> to send a private message to another user
@@ -139,17 +155,15 @@ class Chat(LineReceiver):
                 room = chatroom.ChatRoom(roomname, self.name)
                 Chat.rooms[roomname] = room
             self.room = Chat.rooms[roomname]
-            message = "entering room: {}\n".format(roomname)
-            for user in Chat.rooms[roomname].users:
-                message += " * {}".format(user)
-                if user == self.name:
-                    message += " (** this is you)\n"
-                else:
-                    message += "\n"
-        message += "end of list."
+        message = "entering room: {}\n".format(roomname)
+        message += self.get_userlist(self.room)
         self.sendLine(message)
         message = " * new user joined chat: {}".format(self.name)
         self.send_to_chatroom(message)
+
+    def command_users(self):
+        message = self.get_userlist(self.room)
+        self.sendLine(message)
 
     def command_leave(self):
         message = " * user has left the chat: {}".format(self.name)
