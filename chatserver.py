@@ -17,15 +17,18 @@ class Chat(LineReceiver):
         self.room = None
 
     def connectionMade(self):
+        '''override from LineReceiver'''
         self.sendLine("Welcome to the fenfiresong chat server\nLogin Name?")
 
     def connectionLost(self, reason):
+        '''override from LineReceiver'''
         if self.room:
             self.command_leave()
         if self.name in self.users:
             del self.users[self.name]
 
     def lineReceived(self, line):
+        '''override from LineReceiver'''
         if self.state == "INTRO":
             self.handle_INTRO(line)
         else:
