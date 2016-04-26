@@ -185,7 +185,7 @@ class Chat(LineReceiver):
 
         message_parts = message.split(None, 1)
         if len(message_parts) < 2:
-            self.sendLine("No user given. Use /kick <user> [reason]")
+            self.sendLine("No user given. Use /mod <user>")
             return
 
         user = message_parts[1]
