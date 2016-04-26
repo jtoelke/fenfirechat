@@ -49,7 +49,9 @@ class Chat(LineReceiver):
         self.state = "CHAT"
 
     def handle_chat(self, message):
-        if message.startswith("/rooms"):
+        if message == "":
+            pass
+        elif message.startswith("/rooms"):
             self.command_rooms()
         elif message.startswith("/join"):
             self.command_join(message)
