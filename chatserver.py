@@ -67,7 +67,10 @@ class Chat(LineReceiver):
             self.sendLine(message)
             self.send_to_chatroom(message)
 
+# helper functions
+
     def name_sanity_check(self, name, nametype):
+        """Check if name meets requirements, return string with reason why not or None."""
         reason = None
         if not name.isalnum():
             reason = "Please choose a {} name that consists of alphanumeric characters.\n".format(nametype)
@@ -76,6 +79,7 @@ class Chat(LineReceiver):
         return reason
 
     def send_to_chatroom(self, message):
+        """Send message to all users of a chat room but for the sender."""
         with Chat.lock:
             recipients = self.room.users
         for name in recipients:
@@ -83,12 +87,15 @@ class Chat(LineReceiver):
                 self.users[name].sendLine(message)
 
     def mod_check(self, user):
+        """Return whether a user has mod rights. Send message to user if not."""
         with Chat.lock:
             if not self.room.has_mod(self.name):
                 self.sendLine("You need to be moderator to use this command.")
                 return False
             else:
                 return True
+
+# command handling
 
     def command_rooms(self):
         message = "Active rooms are:\n"
