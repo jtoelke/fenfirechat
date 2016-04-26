@@ -1,9 +1,9 @@
 class ChatRoom:
 
     def __init__(self, name, user):
-          self.name = name
-          self.users = [user]
-          self.moderators = [user]
+        self.name = name
+        self.users = [user]
+        self.moderators = [user]
 
     def add_user(self, user):
         self.users.append(user)
