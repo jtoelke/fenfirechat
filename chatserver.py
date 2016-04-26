@@ -82,6 +82,14 @@ class Chat(LineReceiver):
             if name != self.name:
                 self.users[name].sendLine(message)
 
+    def mod_check(self, user):
+        with Chat.lock:
+            if not self.room.has_mod(self.name):
+                self.sendLine("You need to be moderator to use this command.")
+                return False
+            else:
+                return True
+
     def command_rooms(self):
         message = "Active rooms are:\n"
         with Chat.lock:
@@ -145,10 +153,8 @@ class Chat(LineReceiver):
                 self.sendLine("Can't find user: {}".format(recipient))
 
     def command_mod(self, message):
-        with Chat.lock:
-            if not self.room.has_mod(self.name):
-                self.sendLine("You need to be moderator to use this command.")
-                return
+        if not self.mod_check(self.name):
+            return
 
         message_parts = message.split(None, 1)
         if len(message_parts) < 2:
@@ -167,10 +173,8 @@ class Chat(LineReceiver):
             self.room.give_mod(user)
 
     def command_kick(self, message):
-        with Chat.lock:
-            if not self.room.has_mod(self.name):
-                self.sendLine("You need to be moderator to use this command.")
-                return
+        if not self.mod_check(self.name):
+            return
 
         message_parts = message.split(None, 2)
         if len(message_parts) < 2:
