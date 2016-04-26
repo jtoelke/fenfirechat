@@ -17,10 +17,7 @@ class ChatRoom:
         return len (self.users)
 
     def has_mod(self, user):
-        if user in self.moderators:
-            return True
-        else:
-            return False
+        return user in self.moderators
 
     def give_mod(self, user):
         if user in self.users:
