@@ -51,6 +51,8 @@ class Chat(LineReceiver):
     def handle_chat(self, message):
         if message == "":
             pass
+        elif message.startswith("/help"):
+            self.command_help()
         elif message.startswith("/rooms"):
             self.command_rooms()
         elif message.startswith("/join"):
@@ -101,6 +103,18 @@ class Chat(LineReceiver):
                 return True
 
 # command handling
+
+    def command_help(self):
+        message = '''Available commands are:
+    /rooms to list active rooms
+    /join <room> to enter or create a room
+    /leave to leave the room you're currently in
+    /quit to disconnect from the server
+    /whisper <user> <message> to send a private message to another user
+    /mod <user> to give moderation rights to another user, only usable if you have moderation rights yourself
+    /kick <user> [reason] to kick a user out of a channel with an optional message, only usable if you have moderation rights
+        '''
+        self.sendLine(message)
 
     def command_rooms(self):
         message = "Active rooms are:\n"
