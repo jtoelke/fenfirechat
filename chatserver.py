@@ -58,6 +58,8 @@ class Chat(LineReceiver):
             self.sendLine("You're not in any room! Use /rooms to list active rooms and use /join <room> to enter or create a room.")
         elif message.startswith("/leave"):
             self.command_leave()
+        elif message.startswith("/mod"):
+            self.command_mod(message)
         elif message.startswith("/kick"):
             self.command_kick(message)
         else:
@@ -141,6 +143,28 @@ class Chat(LineReceiver):
                 self.sendLine("To {}: {}".format(recipient, pmessage))
             else:
                 self.sendLine("Can't find user: {}".format(recipient))
+
+    def command_mod(self, message):
+        with Chat.lock:
+            if not self.room.has_mod(self.name):
+                self.sendLine("You need to be moderator to use this command.")
+                return
+
+        message_parts = message.split(None, 1)
+        if len(message_parts) < 2:
+            self.sendLine("No user given. Use /kick <user> [reason]")
+            return
+
+        user = message_parts[1]
+        if user not in self.users:
+            self.sendLine("There is no user {}.".format(user))
+            return
+
+        message = " * {} was made moderator by {}.".format(user, self.name)
+        self.send_to_chatroom(message)
+        self.sendLine(message)
+        with Chat.lock:
+            self.room.give_mod(user)
 
     def command_kick(self, message):
         with Chat.lock:

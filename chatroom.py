@@ -21,3 +21,10 @@ class ChatRoom:
             return True
         else:
             return False
+
+    def give_mod(self, user):
+        if user in self.users:
+            self.moderators.append(user)
+            return True
+        else:
+            return False
