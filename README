@@ -1,0 +1,7 @@
+Requirements:
+
+Python 2.7
+Twisted 13.2.0 or higher
+
+Run with:
+python ./chatserver.py
