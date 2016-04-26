@@ -5,6 +5,9 @@ class ChatRoom:
         self.users = [user]
         self.moderators = [user]
 
+    def len_users(self):
+        return len(self.users)
+
     def add_user(self, user):
         self.users.append(user)
         self.users.sort()
@@ -14,7 +17,6 @@ class ChatRoom:
             self.users.remove(user)
         if user in self.moderators:
             self.moderators.remove(user)
-        return len (self.users)
 
     def has_mod(self, user):
         return user in self.moderators

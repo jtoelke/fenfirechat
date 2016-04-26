@@ -143,7 +143,8 @@ class Chat(LineReceiver):
         message = " * user has left the chat: {} (** this is you)".format(self.name)
         self.sendLine(message)
         with Chat.lock:
-            if self.room.remove_user(self.name) == 0:
+            self.room.remove_user(self.name)
+            if self.room.len_users() == 0:
                 del Chat.rooms[self.room.name]
         self.room = None
 
@@ -206,7 +207,8 @@ class Chat(LineReceiver):
         self.send_to_chatroom(message)
         self.sendLine(message)
         with Chat.lock:
-            if self.room.remove_user(user) == 0:
+            self.room.remove_user(user)
+            if self.room.len_users() == 0:
                 del Chat.rooms[self.room.name]
         self.users[user].room = None
 
