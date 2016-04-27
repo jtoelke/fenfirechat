@@ -67,6 +67,8 @@ class Chat(LineReceiver):
             self.command_users()
         elif message.startswith("/leave"):
             self.command_leave()
+        elif message.startswith("/me"):
+            self.command_me(message)
         elif message.startswith("/mod"):
             self.command_mod(message)
         elif message.startswith("/kick"):
@@ -127,6 +129,7 @@ class Chat(LineReceiver):
     /leave to leave the room you're currently in
     /quit to disconnect from the server
     /whisper <user> <message> to send a private message to another user
+    /me to perform an action, replacing /me with your user name, for example: /me dances is displayed as * user dances
     /mod <user> to give moderation rights to another user, only usable if you have moderation rights yourself
     /kick <user> [reason] to kick a user out of a channel with an optional message, only usable if you have moderation rights
         '''
@@ -175,6 +178,11 @@ class Chat(LineReceiver):
             if self.room.len_users() == 0:
                 del Chat.rooms[self.room.name]
         self.room = None
+
+    def command_me(self, message):
+        message = message.replace("/me", "* {}".format(self.name), 1).strip()
+        self.sendLine(message)
+        self.send_to_chatroom(message)
 
     def command_quit(self):
         self.sendLine("BYE")
